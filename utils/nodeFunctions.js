@@ -1,6 +1,6 @@
-let nodeRadius = 40;
+let nodeRadius = 20;
 
-function Node(x, y, basePCSet, index, isActive = false) {
+function Node(x, y, basePCSet, index, isActive = false, mode) {
     let basePCSetTransposed = basePCSet.map(pc => (pc + tonic));
     let rootNote = basePCSetTransposed[0]%12;
     let rootNoteName = rootNotes[rootNote];
@@ -22,6 +22,7 @@ function Node(x, y, basePCSet, index, isActive = false) {
       rootNoteName: rootNoteName,
       isActive: isActive,
       quality: quality,
+      mode: mode,
       display: displayNode
     };
   
@@ -42,11 +43,17 @@ function Node(x, y, basePCSet, index, isActive = false) {
   function createNodeDial() {
     let nodes = [];
   
-    basePCSets.forEach((basePCSet, index) => {
+    majorBasePCSets.forEach((basePCSet, index) => {
       const angle = (TWO_PI / 12 * index) - HALF_PI;
       const x = radius * cos(angle) + width / 2;
       const y = radius * sin(angle) + height / 2;
-      nodes.push(Node(x, y, basePCSet, index)); // Passing each element from basePCSets array as basePCSet
+      nodes.push(Node(x, y, basePCSet, index, 0)); // Passing each element from basePCSets array as basePCSet
+    });
+    minorBasePCSets.forEach((basePCSet, index) => {
+      const angle = (TWO_PI / 12 * index) - PI;
+      const x = radius * .7 * cos(angle) + width / 2;
+      const y = radius * .7 * sin(angle) + height / 2;
+      nodes.push(Node(x, y, basePCSet, index, 0)); // Passing each element from basePCSets array as basePCSet
     });
   
     return nodes;
@@ -63,7 +70,9 @@ function Node(x, y, basePCSet, index, isActive = false) {
     if (activeNodes.length === 1){
         return activeNodes[0].basePCSet;
     }
+    //SECONDARY DOMINANT CHORDS////////////////////
     else if (activeNodes.length === 2){
+      console.log(Math.abs(activeNodes[0].index - activeNodes[1].index));
         if (Math.abs(activeNodes[0].index - activeNodes[1].index) === 1){
             // Logic for chord with adjacent notes pressed -- SECONDARY DOMINANTS (V/x)
             let tonicIndex = (activeNodes[0].index > activeNodes[1].index ? 0 : 1);
@@ -76,27 +85,52 @@ function Node(x, y, basePCSet, index, isActive = false) {
             return adjustedPCSet;
 
     }
+
     else if (Math.abs(activeNodes[0].index - activeNodes[1].index) === 2){
         let tonicIndex = (activeNodes[0].index > activeNodes[1].index ? 0 : 1);
-
         const adjustedPCSet = [...activeNodes[tonicIndex].basePCSet];
 
         for (i = 0; i < activeNodes[tonicIndex].quality; i++){
             adjustedPCSet[i+1]++;
         }
+        
         adjustedPCSet.push((adjustedPCSet[0]+10)%12);
         console.log(adjustedPCSet);
         return adjustedPCSet;
     }
     else if (Math.abs(activeNodes[0].index - activeNodes[1].index) === 10){
         let tonicIndex = (activeNodes[0].index > activeNodes[1].index ? 1 : 0);
-
         const adjustedPCSet = [...activeNodes[tonicIndex].basePCSet];
-        adjustedPCSet[1] += activeNodes[tonicIndex].quality;
+
+        for (i = 0; i < activeNodes[tonicIndex].quality; i++){
+          adjustedPCSet[i+1]++;
+       }
+      
         adjustedPCSet.push((adjustedPCSet[0]+10)%12);
         console.log(adjustedPCSet);
         return adjustedPCSet;
     }
+    //FORCE MINOR CHORDS//////////////////////////
+    else if (Math.abs(activeNodes[0].index - activeNodes[1].index) === 3){
+      let tonicIndex = (activeNodes[0].index > activeNodes[1].index ? 0 : 1);
+      const adjustedPCSet = [...activeNodes[tonicIndex].basePCSet];
+
+      if (activeNodes[tonicIndex].quality === 0) adjustedPCSet[1]--;
+      else if (activeNodes[tonicIndex].quality === 2) adjustedPCSet[2]++;
+
+      console.log(adjustedPCSet);
+      return adjustedPCSet;
+  }
+  else if (Math.abs(activeNodes[0].index - activeNodes[1].index) === 9){
+      let tonicIndex = (activeNodes[0].index > activeNodes[1].index ? 1 : 0);
+      const adjustedPCSet = [...activeNodes[tonicIndex].basePCSet];
+
+      if (activeNodes[tonicIndex].quality === 0) adjustedPCSet[1]--;
+      else if (activeNodes[tonicIndex].quality === 2) adjustedPCSet[2]++;
+
+      console.log(adjustedPCSet);
+      return adjustedPCSet;
+  }
     else {return activeNodes[0].basePCSet;}
 }
     else{return [];}
