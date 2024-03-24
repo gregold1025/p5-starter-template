@@ -1,7 +1,8 @@
-let nodeRadius = 20;
+let nodeRadius = 50;
 
-function Node(x, y, basePCSet, index, isActive = false, mode) {
-    let basePCSetTransposed = basePCSet.map(pc => (pc + tonic));
+
+function Node(x, y, basePCSet, index, modeColor, isActive = false) {
+    let basePCSetTransposed = basePCSet.map(pc => (pc + tonic)%12);
     let rootNote = basePCSetTransposed[0]%12;
     let rootNoteName = rootNotes[rootNote];
 
@@ -17,17 +18,17 @@ function Node(x, y, basePCSet, index, isActive = false, mode) {
       x: x,
       y: y,
       index: index,
-      basePCSet: basePCSetTransposed,
+      basePCSet: basePCSetTransposed, 
       rootNote: rootNote,
       rootNoteName: rootNoteName,
       isActive: isActive,
       quality: quality,
-      mode: mode,
+      modeColor: modeColor,
       display: displayNode
     };
   
     function displayNode() {
-      const color = this.isActive ? "green" : "blue";
+      const color = this.isActive ? "blue" : modeColor;
   
       fill(color);
       ellipse(this.x, this.y, nodeRadius * 2); // Draw the circle
@@ -40,24 +41,40 @@ function Node(x, y, basePCSet, index, isActive = false, mode) {
     }
   }
   
-  function createNodeDial() {
+  function createNodeArray() {
     let nodes = [];
-  
-    majorBasePCSets.forEach((basePCSet, index) => {
-      const angle = (TWO_PI / 12 * index) - HALF_PI;
-      const x = radius * cos(angle) + width / 2;
-      const y = radius * sin(angle) + height / 2;
-      nodes.push(Node(x, y, basePCSet, index, 0)); // Passing each element from basePCSets array as basePCSet
-    });
-    minorBasePCSets.forEach((basePCSet, index) => {
-      const angle = (TWO_PI / 12 * index) - PI;
-      const x = radius * .7 * cos(angle) + width / 2;
-      const y = radius * .7 * sin(angle) + height / 2;
-      nodes.push(Node(x, y, basePCSet, index, 0)); // Passing each element from basePCSets array as basePCSet
+    modalBasePCSets.forEach((basePCSets, index) => {
+      let radiusOffset = 100 + (nodeRadius * 3 * index);
+      let colorOffset = color(index, 100, 50);
+      nodes = createNodeDialHelper(basePCSets, nodes, index, radiusOffset, colorOffset);
+      // nodes = createNodeGridHelper(basePCSets, nodes, colorOffset, index);
     });
   
     return nodes;
   }
+
+  function createNodeDialHelper(basePCSets, nodes, indexOffset, dialRadius, modeColor){ 
+    nodeRadius = 25;   
+    basePCSets.forEach((basePCSet, index) => {
+    let indexPosn = (index >= (6-indexOffset) ? index - 7 : index);
+    const angle = (TWO_PI / 12 * indexPosn) - HALF_PI;
+    const x = dialRadius * cos(angle) + width / 2;
+    const y = dialRadius * sin(angle) + height / 2;
+    nodes.push(Node(x, y, basePCSet, index, modeColor));
+  });
+  return nodes;
+}
+  function createNodeGridHelper(basePCSets, nodes, modeColor, yVal){
+    nodeRadius = 50;
+    basePCSets.forEach((basePCSet, index) => {
+      const x = 200 + nodeRadius * 2 * index;
+      const y = 200 + nodeRadius * 2 * yVal;
+
+      nodes.push(Node(x, y, basePCSet, index, modeColor));
+      });
+    return nodes;
+  }
+
   
   function displayNodeDial(dial) {
     dial.forEach(node => {
@@ -65,74 +82,3 @@ function Node(x, y, basePCSet, index, isActive = false, mode) {
     });
   }
   
-
-  function activeNodeChordHandler(activeNodes){
-    if (activeNodes.length === 1){
-        return activeNodes[0].basePCSet;
-    }
-    //SECONDARY DOMINANT CHORDS////////////////////
-    else if (activeNodes.length === 2){
-      console.log(Math.abs(activeNodes[0].index - activeNodes[1].index));
-        if (Math.abs(activeNodes[0].index - activeNodes[1].index) === 1){
-            // Logic for chord with adjacent notes pressed -- SECONDARY DOMINANTS (V/x)
-            let tonicIndex = (activeNodes[0].index > activeNodes[1].index ? 0 : 1);
-
-            const adjustedPCSet = [...activeNodes[tonicIndex].basePCSet];
-            for (i = 0; i < activeNodes[tonicIndex].quality; i++){
-                adjustedPCSet[i+1]++;
-            }
-            console.log(adjustedPCSet, activeNodes[tonicIndex].quality);
-            return adjustedPCSet;
-
-    }
-
-    else if (Math.abs(activeNodes[0].index - activeNodes[1].index) === 2){
-        let tonicIndex = (activeNodes[0].index > activeNodes[1].index ? 0 : 1);
-        const adjustedPCSet = [...activeNodes[tonicIndex].basePCSet];
-
-        for (i = 0; i < activeNodes[tonicIndex].quality; i++){
-            adjustedPCSet[i+1]++;
-        }
-        
-        adjustedPCSet.push((adjustedPCSet[0]+10)%12);
-        console.log(adjustedPCSet);
-        return adjustedPCSet;
-    }
-    else if (Math.abs(activeNodes[0].index - activeNodes[1].index) === 10){
-        let tonicIndex = (activeNodes[0].index > activeNodes[1].index ? 1 : 0);
-        const adjustedPCSet = [...activeNodes[tonicIndex].basePCSet];
-
-        for (i = 0; i < activeNodes[tonicIndex].quality; i++){
-          adjustedPCSet[i+1]++;
-       }
-      
-        adjustedPCSet.push((adjustedPCSet[0]+10)%12);
-        console.log(adjustedPCSet);
-        return adjustedPCSet;
-    }
-    //FORCE MINOR CHORDS//////////////////////////
-    else if (Math.abs(activeNodes[0].index - activeNodes[1].index) === 3){
-      let tonicIndex = (activeNodes[0].index > activeNodes[1].index ? 0 : 1);
-      const adjustedPCSet = [...activeNodes[tonicIndex].basePCSet];
-
-      if (activeNodes[tonicIndex].quality === 0) adjustedPCSet[1]--;
-      else if (activeNodes[tonicIndex].quality === 2) adjustedPCSet[2]++;
-
-      console.log(adjustedPCSet);
-      return adjustedPCSet;
-  }
-  else if (Math.abs(activeNodes[0].index - activeNodes[1].index) === 9){
-      let tonicIndex = (activeNodes[0].index > activeNodes[1].index ? 1 : 0);
-      const adjustedPCSet = [...activeNodes[tonicIndex].basePCSet];
-
-      if (activeNodes[tonicIndex].quality === 0) adjustedPCSet[1]--;
-      else if (activeNodes[tonicIndex].quality === 2) adjustedPCSet[2]++;
-
-      console.log(adjustedPCSet);
-      return adjustedPCSet;
-  }
-    else {return activeNodes[0].basePCSet;}
-}
-    else{return [];}
-  
-}

@@ -1,11 +1,12 @@
 
 
-let tonic = 0;
+let tonic = 7;
 let radius = 200;
 
 function setup() {
-  createCanvas(800, 800);
-  dial = createNodeDial();
+  createCanvas(1000, 1000);
+  colorMode(HSB, 14, 100, 100);
+  dial = createNodeArray();
 
   polySynth = new p5.PolySynth();
 }

@@ -19,4 +19,11 @@ function mousePressed() {
 }
 
 
-  
+// function mousePressed() { 
+//   dial.forEach(node => {
+//   if (dist(mouseX, mouseY, node.x, node.y) < nodeRadius) {
+//     activeNodes.push(node);
+//     triggerNotes(activeNodeChordHandler(node.basePCSet));
+//   }
+// });
+// }
