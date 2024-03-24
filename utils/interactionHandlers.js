@@ -1,9 +1,9 @@
 let activeNodes = [];
-
+let chordFromActiveNodes = [];
 
 function mousePressed() {
     dial.forEach(node => {
-      if (dist(mouseX, mouseY, node.x, node.y) < 20) {
+      if (dist(mouseX, mouseY, node.x, node.y) < nodeRadius) {
         node.isActive = !node.isActive;
         if (node.isActive) {
             // Add node to activeNodes list if isActive is true
@@ -13,6 +13,7 @@ function mousePressed() {
             activeNodes = activeNodes.filter(activeNode => activeNode !== node);
           }
         activeNodes.forEach(node => {console.log(node.rootNoteName, node.basePCSet, node.isActive)});
+        chordFromActiveNodes = activeNodeChordHandler(activeNodes);
       }
     });
 }

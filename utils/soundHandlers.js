@@ -1,13 +1,11 @@
 function triggerNotes(activeNodes) {
     userStartAudio();
-    // Iterate through activeNodes
-    activeNodes.forEach(node => {
-  
-      node.basePCSet.forEach(midiNote => {
 
-        polySynth.play(midiToNoteName(midiNote + 60), .3, 0, 2);
+
+      chordFromActiveNodes.forEach(midiNote => {
+        polySynth.play(midiToNoteName(midiNote + 48), .3, 0, 2);
       });
-    });
+    
   }
 
   function midiToNoteName(midi) {
@@ -22,7 +20,5 @@ function triggerNotes(activeNodes) {
     
     return noteName + octave;
   }
-  
-  // Example usage
-  console.log(midiToNoteName(60)); // Output: 'C4'
+
   
